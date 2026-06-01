@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>NX FAHIM Admin Panel</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+.admin-container{
+max-width:900px;
+margin:50px auto;
+padding:20px;
+}
+
+.admin-card{
+background:#111;
+padding:25px;
+border-radius:20px;
+border:1px solid #222;
+}
+
+.admin-card input,
+.admin-card textarea{
+width:100%;
+padding:15px;
+margin:10px 0;
+background:#1a1a1a;
+color:white;
+border:none;
+border-radius:10px;
+}
+
+.admin-card textarea{
+min-height:150px;
+resize:vertical;
+}
+
+.btn{
+padding:12px 20px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+background:#ff0000;
+color:white;
+font-weight:bold;
+margin-right:10px;
+}
+
+.hidden{
+display:none;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="admin-container">
+
+<h1 style="text-align:center;color:#ff0000;">
+NX FAHIM Admin Panel
+</h1>
+
+<div style="text-align:center;margin:20px 0;">
+
+<button id="loginBtn" class="btn">
+Login With Google
+</button>
+
+<button id="logoutBtn" class="btn hidden">
+Logout
+</button>
+
+</div>
+
+<div id="adminPanel" class="admin-card hidden">
+
+<h2>Website Editor</h2>
+
+<input id="name" placeholder="Website Name">
+
+<input id="logo" placeholder="Logo URL">
+
+<input id="youtube1" placeholder="YouTube Channel 1">
+
+<input id="youtube2" placeholder="YouTube Channel 2">
+
+<input id="youtube3" placeholder="YouTube Channel 3">
+
+<input id="tiktok" placeholder="TikTok Link">
+
+<input id="email" placeholder="Email">
+
+<textarea id="about"
+placeholder="About Section">
+</textarea>
+
+<button id="saveBtn" class="btn">
+Save Changes
+</button>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import {
+db,
+auth,
+provider,
+doc,
+getDoc,
+updateDoc,
+signInWithPopup,
+signOut,
+onAuthStateChanged
+}
+from "./firebase.js";
+
+const ADMIN_EMAIL =
+"ayedmd6@gmail.com";
+
+const loginBtn =
+document.getElementById("loginBtn");
+
+const logoutBtn =
+document.getElementById("logoutBtn");
+
+const adminPanel =
+document.getElementById("adminPanel");
+
+const saveBtn =
+document.getElementById("saveBtn");
+
+
+loginBtn.onclick = async () => {
+
+try {
+
+await signInWithPopup(
+auth,
+provider
+);
+
+}
+catch(err){
+
+alert(err.message);
+
+}
+
+};
+
+
+logoutBtn.onclick = async () => {
+
+await signOut(auth);
+
+};
+
+
+onAuthStateChanged(
+auth,
+async (user)=>{
+
+if(!user){
+
+adminPanel.classList.add("hidden");
+
+loginBtn.classList.remove("hidden");
+
+logoutBtn.classList.add("hidden");
+
+return;
+
+}
+
+if(user.email !== ADMIN_EMAIL){
+
+alert(
+"Access Denied"
+);
+
+await signOut(auth);
+
+return;
+
+}
+
+adminPanel.classList.remove(
+"hidden"
+);
+
+loginBtn.classList.add(
+"hidden"
+);
+
+logoutBtn.classList.remove(
+"hidden"
+);
+
+loadData();
+
+}
+);
+
+
+async function loadData(){
+
+const ref = doc(
+db,
+"website",
+"main"
+);
+
+const snap =
+await getDoc(ref);
+
+if(!snap.exists()) return;
+
+const data =
+snap.data();
+
+document.getElementById("name").value =
+data.name || "";
+
+document.getElementById("logo").value =
+data.logo || "";
+
+document.getElementById("youtube1").value =
+data.youtube1 || "";
+
+document.getElementById("youtube2").value =
+data.youtube2 || "";
+
+document.getElementById("youtube3").value =
+data.youtube3 || "";
+
+document.getElementById("tiktok").value =
+data.tiktok || "";
+
+document.getElementById("email").value =
+data.email || "";
+
+document.getElementById("about").value =
+data.about || "";
+
+}
+
+
+saveBtn.onclick = async ()=>{
+
+const ref =
+doc(
+db,
+"website",
+"main"
+);
+
+await updateDoc(ref,{
+
+name:
+document.getElementById("name").value,
+
+logo:
+document.getElementById("logo").value,
+
+youtube1:
+document.getElementById("youtube1").value,
+
+youtube2:
+document.getElementById("youtube2").value,
+
+youtube3:
+document.getElementById("youtube3").value,
+
+tiktok:
+document.getElementById("tiktok").value,
+
+email:
+document.getElementById("email").value,
+
+about:
+document.getElementById("about").value
+
+});
+
+alert(
+"Website Updated Successfully"
+);
+
+};
+
+</script>
+
+</body>
+  </html>
